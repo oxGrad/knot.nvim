@@ -28,17 +28,21 @@ Neovim plugin for the [knot](https://github.com/oxGrad/knot) dotfiles manager.
 ```lua
 {
   "oxGrad/knot.nvim",
-  name = "knot.nvim", -- registers the plugin under this name in lazy's registry
-  main = "knot",      -- tells lazy.nvim to call require("knot").setup(opts)
-  ft   = "knotfile",
+  main = "knot",   -- tells lazy.nvim to call require("knot").setup(opts)
+  lazy = false,    -- must load at startup so the devicon is registered before file trees render
   opts = {
     auto_configure_yamlls = true,
   },
 },
 ```
 
+> **Why `lazy = false`?** The devicon must be registered before plugins like
+> nvim-tree or neo-tree first render. With `ft = "knotfile"` the plugin would
+> only load after you open a Knotfile, so the icon would show the default until
+> then.
+>
 > **Why `main = "knot"`?** Without it, lazy.nvim derives the module name from the
-> directory name (`neovim`) and calls `require("neovim").setup(opts)`, which fails.
+> repo name (`knot.nvim`) and calls `require("knot.nvim").setup(opts)`, which fails.
 
 ### packer.nvim
 
