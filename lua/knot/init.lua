@@ -23,14 +23,17 @@ local defaults = {
 function M._register_devicon()
   local ok, devicons = pcall(require, "nvim-web-devicons")
   if not ok then return end
+  -- Key must match the actual filename (capital K) for get_icon("Knotfile","") lookups.
   devicons.set_icon({
-    knotfile = {
+    Knotfile = {
       icon  = "🪢",
-      color = "#a78bfa",   -- soft violet — rope-like
+      color = "#a78bfa",
       cterm_color = "141",
       name  = "Knotfile",
     },
   })
+  -- Also register for filetype-based lookups (get_icon_by_filetype("knotfile")).
+  devicons.set_icon_by_filetype({ knotfile = "Knotfile" })
 end
 
 --- Set up the plugin.
