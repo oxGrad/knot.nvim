@@ -23,17 +23,20 @@ local defaults = {
 function M._register_devicon()
   local ok, devicons = pcall(require, "nvim-web-devicons")
   if not ok then return end
+  local icon_data = {
+    icon  = "🪢",
+    color = "#a78bfa",
+    cterm_color = "141",
+    name  = "Knotfile",
+  }
   -- Key must match the actual filename (capital K) for get_icon("Knotfile","") lookups.
-  devicons.set_icon({
-    Knotfile = {
-      icon  = "🪢",
-      color = "#a78bfa",
-      cterm_color = "141",
-      name  = "Knotfile",
-    },
-  })
+  devicons.set_icon({ Knotfile = icon_data })
   -- Also register for filetype-based lookups (get_icon_by_filetype("knotfile")).
-  devicons.set_icon_by_filetype({ knotfile = "Knotfile" })
+  -- Pass the full icon data table; set_icon_by_filetype cannot resolve user-registered
+  -- icon names by string reference (only built-in icon names work that way).
+  if devicons.set_icon_by_filetype then
+    devicons.set_icon_by_filetype({ knotfile = icon_data })
+  end
 end
 
 --- Set up the plugin.
@@ -52,21 +55,15 @@ function M.setup(opts)
   -- 2. Register the 🪢 devicon (no-op if nvim-web-devicons is not installed).
   M._register_devicon()
 
-  -- 3. Override treesitter parser to "yaml" for knotfile buffers so that
-  --    tree-sitter-yaml highlighting and text-objects work out of the box.
-  vim.api.nvim_create_autocmd("FileType", {
-    pattern = "knotfile",
-    group = vim.api.nvim_create_augroup("KnotfileTreesitter", { clear = true }),
-    callback = function(ev)
-      -- vim.treesitter.start() requires Neovim 0.9+
-      if vim.fn.has("nvim-0.9") == 1 then
-        local ok, parsers = pcall(require, "nvim-treesitter.parsers")
-        if ok and parsers.has_parser("yaml") then
-          vim.treesitter.start(ev.buf, "yaml")
-        end
-      end
-    end,
-  })
+  -- 3. Tell treesitter that knotfile buffers use the yaml parser, so that
+  --    nvim-treesitter's auto-highlight and text-objects work out of the box.
+  --    We use language.register() rather than vim.treesitter.start() because
+  --    start() disables the Vim syntax engine, which would prevent
+  --    syntax/knotfile.vim from providing fallback highlighting for users
+  --    who do not have nvim-treesitter installed.
+  if vim.fn.has("nvim-0.9") == 1 and vim.treesitter.language ~= nil then
+    pcall(vim.treesitter.language.register, "yaml", "knotfile")
+  end
 
   -- 4. Optionally configure yamlls schema at runtime.
   if cfg.auto_configure_yamlls then
