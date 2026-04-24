@@ -29,13 +29,13 @@ function M._register_devicon()
     cterm_color = "141",
     name  = "Knotfile",
   }
-  -- Key must match the actual filename (capital K) for get_icon("Knotfile","") lookups.
-  devicons.set_icon({ Knotfile = icon_data })
-  -- Also register for filetype-based lookups (get_icon_by_filetype("knotfile")).
-  -- Pass the full icon data table; set_icon_by_filetype cannot resolve user-registered
-  -- icon names by string reference (only built-in icon names work that way).
+  -- Key must be lowercase: get_icon_data() lowercases the lookup name before
+  -- checking icons[], so "Knotfile" as a key would never match.
+  devicons.set_icon({ knotfile = icon_data })
+  -- set_icon_by_filetype maps filetype → icon name (string), not icon data.
+  -- The name "knotfile" must match the key used in set_icon above.
   if devicons.set_icon_by_filetype then
-    devicons.set_icon_by_filetype({ knotfile = icon_data })
+    devicons.set_icon_by_filetype({ knotfile = "knotfile" })
   end
 end
 
